@@ -13,7 +13,7 @@ A minimalistic static site generator written in Go. Simple, fast, and focused on
 ```bash
 git clone https://github.com/LazyCode2/Koyo-site.git
 cd Koyo-site
-go install cmd/
+go install
 ``` 
 
 ### Install directly

@@ -254,8 +254,7 @@ your-project/
 ```bash
 koyo-site -init     # Initialize new project
 koyo-site -build    # Build static site
-koyo-site -serve    # Serve locally (coming soon)
-koyo-site -help     # Show help
+koyo-site -serve    # Serve locally 
 ```
 
 ## Dependencies

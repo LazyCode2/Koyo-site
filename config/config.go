@@ -28,5 +28,5 @@ func LoadConf() (*Config, error) {
 		return nil, err
 	}
 
-	return &cfg, nil
+	return &cfg, err
 }

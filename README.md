@@ -159,7 +159,7 @@ public/
     └── my-first-post.html
 ```
 
-### 6. Serve locally (coming soon)
+### 6. Serve locally
 
 ```bash
 Koyo-site -serve

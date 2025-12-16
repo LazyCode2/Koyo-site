@@ -8,6 +8,7 @@ type Config struct {
 	Site struct {
 		Title  string `yaml:"title"`
 		Author string `yaml:"author"`
+		Bio    string `yaml:"bio"`
 	} `yaml:"site"`
 
 	Paths struct {

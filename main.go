@@ -13,9 +13,10 @@ import (
 )
 
 var (
-	initFlag  = flag.Bool("init", false, "Initialize a new koyo-site project")
-	buildFlag = flag.Bool("build", false, "Build the static site")
-	serveFlag = flag.Bool("serve", false, "Serve the site locally")
+	initFlag  	= flag.Bool("init", false, "Initialize a new koyo-site project")
+	buildFlag 	= flag.Bool("build", false, "Build the static site")
+	serveFlag 	= flag.Bool("serve", false, "Serve the site locally")
+	addFile 	= flag.String("add", "", "Add a file")
 )
 
 func main(){
@@ -28,6 +29,8 @@ func main(){
 		buildSite()
 	case *serveFlag:
 		serveSite()
+	case *addFile != "":
+		addNewFile(*addFile)
 	default:
 		printHelp()
 	}
@@ -71,7 +74,22 @@ paths:
 	fmt.Println("✨ koyo-site project initialized")
 }
 
+func addNewFile(filename string){
+	// Load config
+	cfg, err := config.LoadConf()
+	if err != nil {
+		fmt.Println("❌ Failed to load config:", err)
+		os.Exit(1)
+	}
 
+	Content := "New post"
+	//{content/filename.md}
+	if err := os.WriteFile(cfg.Paths.Content + "/" + filename + ".md", []byte(Content), 0644); err != nil {
+		fmt.Println("❌ Failed to create" + filename + ".md")
+		os.Exit(1)
+	}
+	fmt.Println("✔ Created " + filename + ".md")
+}
 
 func buildSite() {
 	fmt.Println("⚙️  Building site...")
@@ -175,9 +193,7 @@ Commands:
   -init           Initialize a new project
   -build          Build the site
   -serve          Serve locally
-  -version        Show version
+  -new <filename> Create markdown post at content
 `)
 	os.Exit(0)
 }
-
-

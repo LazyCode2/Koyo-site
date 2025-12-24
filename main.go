@@ -16,10 +16,10 @@ var (
 	initFlag  = flag.Bool("init", false, "Initialize a new koyo-site project")
 	buildFlag = flag.Bool("build", false, "Build the static site")
 	serveFlag = flag.Bool("serve", false, "Serve the site locally")
-	addFile 	= flag.String("add", "", "Add a file")
+	addFile   = flag.String("add", "", "Add a file")
 )
 
-func main(){
+func main() {
 	// Parsing the flag for cli commands
 	flag.Parse()
 
@@ -36,7 +36,7 @@ func main(){
 		printHelp()
 	}
 }
-	
+
 func initProject() {
 	dirs := []string{
 		"content",
@@ -54,18 +54,21 @@ func initProject() {
 		fmt.Printf("✔ Created %s/\n", dir)
 	}
 
-	// Config file name 
+	// Config file name
 	configFile := "koyo.config.yaml"
 
-	configContent := `site:
+configContent := `site:
   title: "My Koyo Site"
   author: "Your Name"
-	bio: "Your Bio"
+  bio: "Your Bio"
 
 paths:
   content: "content"
   templates: "templates"
   output: "public"
+
+server:
+  port: ":8080"
 `
 
 	if err := os.WriteFile(configFile, []byte(configContent), 0644); err != nil {
@@ -77,7 +80,7 @@ paths:
 	fmt.Println("✨ koyo-site project initialized")
 }
 
-func addNewFile(filename string){
+func addNewFile(filename string) {
 	// Load config
 	cfg, err := config.LoadConf()
 	if err != nil {
@@ -87,7 +90,7 @@ func addNewFile(filename string){
 
 	Content := "New post"
 	//{content/filename.md}
-	if err := os.WriteFile(cfg.Paths.Content + "/" + filename + ".md", []byte(Content), 0644); err != nil {
+	if err := os.WriteFile(cfg.Paths.Content+"/"+filename+".md", []byte(Content), 0644); err != nil {
 		fmt.Println("❌ Failed to create" + filename + ".md")
 		os.Exit(1)
 	}
@@ -96,7 +99,7 @@ func addNewFile(filename string){
 
 func buildSite() {
 	fmt.Println("⚙️  Building site...")
-	
+
 	// Load config
 	cfg, err := config.LoadConf()
 	if err != nil {
@@ -137,7 +140,7 @@ func buildSite() {
 		outputPath := filepath.Join(blogsDir, outputName)
 
 		fmt.Printf("📄 Building %s -> blogs/%s\n", entry.Name(), outputName)
-		
+
 		if err := pages.GeneratePage(contentPath, postTemplatePath, outputPath); err != nil {
 			fmt.Printf("❌ Failed to generate %s: %v\n", entry.Name(), err)
 			continue
@@ -151,7 +154,7 @@ func buildSite() {
 	} else {
 		fmt.Println("📄 Building index.html")
 		indexOutputPath := filepath.Join(cfg.Paths.Output, "index.html")
-		
+
 		if err := pages.GenerateIndexPage(
 			cfg.Paths.Content,
 			indexTemplatePath,
@@ -178,10 +181,10 @@ func serveSite() {
 	}
 
 	fs := http.FileServer(http.Dir(cfg.Paths.Output))
-	http.Handle("/",fs)
+	http.Handle("/", fs)
 
-	fmt.Println("🚀 Serving site at http://localhost:8080")
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+	fmt.Println("🚀 Serving site at http://localhost:"+ cfg.Server.Port)
+	if err := http.ListenAndServe(cfg.Server.Port, nil); err != nil {
 		fmt.Println("❌ Failed to start server")
 	}
 }

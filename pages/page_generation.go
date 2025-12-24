@@ -48,7 +48,11 @@ func ParseFrontmatter(content []byte) (map[string]interface{}, []byte) {
 }
 
 func BuildPage(contentPath string) *Page {
-	content, _ := parse.GetContent(contentPath)
+	content, _ , err := parse.GetContent(contentPath)
+
+	if err != nil {
+		log.Fatal("cannot read markdown:", err) 
+	}
 
 	frontmatter, bodyContent := ParseFrontmatter(content)
 	htmlBody := markdown.ToHTML(bodyContent, nil, nil)

@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/LazyCode2/Koyo-site/utils"
 	"github.com/gomarkdown/markdown"
 )
 
@@ -28,9 +29,11 @@ type IndexPage struct {
 	SiteTitle     string
 	SiteAuthor    string
 	SiteAuthorBio string
-	Content     template.HTML
-	Posts       []PostMeta
+	Content       template.HTML
+	Posts         []PostMeta
 }
+
+var logger = utils.NewLogger()
 
 func CollectPosts(contentDir string) ([]PostMeta, error) {
 	entries, err := os.ReadDir(contentDir)
@@ -44,7 +47,7 @@ func CollectPosts(contentDir string) ([]PostMeta, error) {
 		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".md") {
 			continue
 		}
-		
+
 		// Skip _index.md
 		if entry.Name() == "_index.md" {
 			continue
@@ -53,11 +56,12 @@ func CollectPosts(contentDir string) ([]PostMeta, error) {
 		contentPath := filepath.Join(contentDir, entry.Name())
 		content, err := os.ReadFile(contentPath)
 		if err != nil {
+			logger.Warn("Skipping %s: failed to read file: %v", entry.Name(), err)
 			continue
 		}
 
 		frontmatter, _ := ParseFrontmatter(content)
-		
+
 		post := PostMeta{
 			Filename: entry.Name(),
 			URL:      "/blogs/" + strings.TrimSuffix(entry.Name(), ".md") + ".html",
@@ -86,22 +90,21 @@ func CollectPosts(contentDir string) ([]PostMeta, error) {
 		posts = append(posts, post)
 	}
 
-	// Sort posts by date (newest first)
 	sort.Slice(posts, func(i, j int) bool {
 		dateI, errI := time.Parse("2006-01-02", posts[i].Date)
 		dateJ, errJ := time.Parse("2006-01-02", posts[j].Date)
-		
+
 		if errI != nil || errJ != nil {
 			return posts[i].Date > posts[j].Date
 		}
-		
+
 		return dateI.After(dateJ)
 	})
 
 	return posts, nil
 }
 
-func GenerateIndexPage(contentDir, templatePath, outputPath, siteTitle, siteAuthor , siteAuthorBio string) error {
+func GenerateIndexPage(contentDir, templatePath, outputPath, siteTitle, siteAuthor, siteAuthorBio string) error {
 	// Read _index.md
 	indexPath := filepath.Join(contentDir, "_index.md")
 	indexContent, err := os.ReadFile(indexPath)
@@ -119,11 +122,11 @@ func GenerateIndexPage(contentDir, templatePath, outputPath, siteTitle, siteAuth
 
 	// Build index page data
 	indexPage := &IndexPage{
-		SiteTitle:  siteTitle,
-		SiteAuthor: siteAuthor,
+		SiteTitle:     siteTitle,
+		SiteAuthor:    siteAuthor,
 		SiteAuthorBio: siteAuthorBio,
-		Content:    template.HTML(htmlBody),
-		Posts:      posts,
+		Content:       template.HTML(htmlBody),
+		Posts:         posts,
 	}
 
 	// Override with frontmatter if present
@@ -139,9 +142,9 @@ func GenerateIndexPage(contentDir, templatePath, outputPath, siteTitle, siteAuth
 		}
 	}
 
-	// Parse and execute template
 	tmpl, err := template.ParseFiles(templatePath)
 	if err != nil {
+		logger.Error("Template parsing failed: %v", err)
 		return fmt.Errorf("failed to parse template: %w", err)
 	}
 

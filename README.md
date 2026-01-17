@@ -25,7 +25,7 @@ go install github.com/LazyCode2/Koyo-site@latest
 ### Build binary
 
 ```bash
-go build -o koyo-site main.go
+go build -o Koyo-site main.go
 ```
 
 ## Quick Start

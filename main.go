@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -10,6 +9,7 @@ import (
 
 	"github.com/LazyCode2/Koyo-site/config"
 	"github.com/LazyCode2/Koyo-site/pages"
+	"github.com/LazyCode2/Koyo-site/utils"
 )
 
 var (
@@ -18,6 +18,8 @@ var (
 	serveFlag = flag.Bool("serve", false, "Serve the site locally")
 	addFile   = flag.String("add", "", "Add a file")
 )
+
+var logger = utils.NewLogger()
 
 func main() {
 	// Parsing the flag for cli commands
@@ -44,20 +46,19 @@ func initProject() {
 		"public",
 	}
 
-	fmt.Println("📁 Initializing koyo-site project...")
+	logger.Info("Initializing koyo-site project...")
 
 	for _, dir := range dirs {
 		if err := os.MkdirAll(dir, 0755); err != nil {
-			fmt.Printf("❌ Failed to create %s: %v\n", dir, err)
-			os.Exit(1)
+			logger.Fatal("❌ Failed to create %s: %v\n", dir, err)
 		}
-		fmt.Printf("✔ Created %s/\n", dir)
+		logger.Info("✔ Created %s/\n", dir)
 	}
 
 	// Config file name
 	configFile := "koyo.config.yaml"
 
-configContent := `site:
+	configContent := `site:
   title: "My Koyo Site"
   author: "Your Name"
   bio: "Your Bio"
@@ -72,66 +73,54 @@ server:
 `
 
 	if err := os.WriteFile(configFile, []byte(configContent), 0644); err != nil {
-		fmt.Println("❌ Failed to create config file:", err)
-		os.Exit(1)
+		logger.Fatal("❌ Failed to create config file:%v\n", err)
 	}
 
-	fmt.Println("✔ Created koyo.config.yaml")
-	fmt.Println("✨ koyo-site project initialized")
+	logger.Info("✔ Created koyo.config.yaml")
+	logger.Info("koyo-site project initialized")
 }
 
-func addNewFile(filename string) {
+func addNewFile(filename string) error {
 	// Load config
 	cfg, err := config.LoadConf()
 	if err != nil {
-		fmt.Println("❌ Failed to load config:", err)
-		os.Exit(1)
+		logger.Fatal("❌ Failed to load config:%v\n", err)
 	}
 
-	Content := "New post"
-	//{content/filename.md}
-	if err := os.WriteFile(cfg.Paths.Content+"/"+filename+".md", []byte(Content), 0644); err != nil {
-		fmt.Println("❌ Failed to create" + filename + ".md")
-		os.Exit(1)
+	content := "New post"
+	filePath := filepath.Join(cfg.Paths.Content, filename+".md")
+	if err := os.WriteFile(filePath, []byte(content), 0644); err != nil {
+		return err
 	}
-	fmt.Println("✔ Created " + filename + ".md")
+	logger.Info("Created file: %s", filePath)
+	return nil
 }
 
-func buildSite() {
-	fmt.Println("⚙️  Building site...")
+func buildSite() error {
+	logger.Info("Building site...")
 
-	// Load config
 	cfg, err := config.LoadConf()
 	if err != nil {
-		fmt.Println("❌ Failed to load config:", err)
-		os.Exit(1)
+		return err
 	}
 
 	blogsDir := filepath.Join(cfg.Paths.Output, "blogs")
 	if err := os.MkdirAll(blogsDir, 0755); err != nil {
-		fmt.Println("❌ Failed to create blogs directory:", err)
-		os.Exit(1)
+		return err
 	}
 
 	entries, err := os.ReadDir(cfg.Paths.Content)
 	if err != nil {
-		fmt.Println("❌ Failed to read content directory:", err)
-		os.Exit(1)
+		return err
 	}
 
 	postTemplatePath := filepath.Join(cfg.Paths.Templates, "default.tmpl")
 	if _, err := os.Stat(postTemplatePath); os.IsNotExist(err) {
-		fmt.Println("❌ Template not found:", postTemplatePath)
-		os.Exit(1)
+		return err
 	}
 
-	// Build individual blog posts
 	for _, entry := range entries {
-		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".md") {
-			continue
-		}
-
-		if entry.Name() == "_index.md" {
+		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".md") || entry.Name() == "_index.md" {
 			continue
 		}
 
@@ -139,58 +128,52 @@ func buildSite() {
 		outputName := strings.TrimSuffix(entry.Name(), ".md") + ".html"
 		outputPath := filepath.Join(blogsDir, outputName)
 
-		fmt.Printf("📄 Building %s -> blogs/%s\n", entry.Name(), outputName)
-
+		logger.Info("Building post: %s -> blogs/%s", entry.Name(), outputName)
 		if err := pages.GeneratePage(contentPath, postTemplatePath, outputPath); err != nil {
-			fmt.Printf("❌ Failed to generate %s: %v\n", entry.Name(), err)
-			continue
+			logger.Warn("Failed to generate %s: %v", entry.Name(), err)
 		}
 	}
 
-	// Build index page
 	indexTemplatePath := filepath.Join(cfg.Paths.Templates, "index.tmpl")
 	if _, err := os.Stat(indexTemplatePath); os.IsNotExist(err) {
-		fmt.Println("⚠️  index.tmpl not found, skipping index generation")
+		logger.Warn("index.tmpl not found, skipping index generation")
 	} else {
-		fmt.Println("📄 Building index.html")
 		indexOutputPath := filepath.Join(cfg.Paths.Output, "index.html")
+		logger.Info("Building index.html")
 
-		if err := pages.GenerateIndexPage(
-			cfg.Paths.Content,
-			indexTemplatePath,
-			indexOutputPath,
-			cfg.Site.Title,
-			cfg.Site.Author,
-			cfg.Site.Bio,
-		); err != nil {
-			fmt.Printf("❌ Failed to generate index: %v\n", err)
+		if err := pages.GenerateIndexPage(cfg.Paths.Content, indexTemplatePath, indexOutputPath,
+			cfg.Site.Title, cfg.Site.Author, cfg.Site.Bio); err != nil {
+			logger.Warn("Failed to generate index: %v", err)
 		}
 	}
 
-	fmt.Println("✅ Site built successfully!")
+	logger.Info("Site built successfully")
+	return nil
 }
 
-func serveSite() {
-	//Building site to avoid error while serving
-	buildSite()
-	// Load config
+func serveSite() error {
+	// Build first
+	if err := buildSite(); err != nil {
+		return err
+	}
+
 	cfg, err := config.LoadConf()
 	if err != nil {
-		fmt.Println("❌ Failed to load config:", err)
-		os.Exit(1)
+		return err
 	}
 
 	fs := http.FileServer(http.Dir(cfg.Paths.Output))
 	http.Handle("/", fs)
 
-	fmt.Println("🚀 Serving site at http://localhost:"+ cfg.Server.Port)
+	logger.Info("Serving site at http://localhost%s", cfg.Server.Port)
 	if err := http.ListenAndServe(cfg.Server.Port, nil); err != nil {
-		fmt.Println("❌ Failed to start server")
+		return err
 	}
+	return nil
 }
 
 func printHelp() {
-	fmt.Println(`
+	logger.Info(`
 koyo-site — a minimal static site generator
 
 Usage:
@@ -200,7 +183,7 @@ Commands:
   -init           Initialize a new project
   -build          Build the site
   -serve          Serve locally
-  -new <filename> Create markdown post at content
+  -add <filename> Create markdown post in content/
 `)
 	os.Exit(0)
 }

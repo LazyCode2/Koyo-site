@@ -1,0 +1,12 @@
+site:
+  title: "My Koyo Site"
+  author: "Your Name"
+  bio: "Your Bio"
+
+paths:
+  content: "content"
+  templates: "templates"
+  output: "public"
+
+server:
+  port: ":8080"

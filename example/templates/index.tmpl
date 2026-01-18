@@ -21,23 +21,51 @@
             margin: 0 auto;
             padding: 2rem 1rem;
         }
-        h1, h2, h3 { font-family: system-ui, sans-serif; color: #fff; }
-        a { color: var(--accent); text-decoration: none; transition: opacity 0.2s; }
-        a:hover { opacity: 0.8; text-decoration: underline; }
+        h1, h2 { font-family: system-ui, sans-serif; color: #fff; }
+        a { color: var(--accent); text-decoration: none; transition: 0.2s; }
+        a:hover { opacity: 0.7; }
         
         header { margin-bottom: var(--gap); border-bottom: 1px solid #333; padding-bottom: var(--gap); }
         .bio { font-style: italic; color: var(--dim); margin-top: 0.5rem; }
         
         .post-list { list-style: none; padding: 0; }
-        .post-item { margin-bottom: 1.5rem; }
-        .post-date { font-size: 0.9rem; color: var(--dim); font-family: monospace; }
-        .post-desc { margin: 0.25rem 0 0; font-size: 0.95rem; color: var(--dim); }
+        .post-item { 
+            display: none; 
+            margin-bottom: 2rem; 
+        }
+        .post-date { font-size: 0.85rem; color: var(--dim); font-family: monospace; text-transform: uppercase; letter-spacing: 1px; }
+        .post-desc { margin: 0.4rem 0 0; font-size: 0.95rem; color: var(--dim); }
+
+        .pagination-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px dashed #333;
+            font-family: system-ui, sans-serif;
+            font-size: 0.9rem;
+        }
+        .btn-page {
+            padding: 0.5rem 1rem;
+            border: 1px solid #444;
+            background: transparent;
+            color: var(--accent);
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .btn-page:disabled {
+            color: #444;
+            border-color: #333;
+            cursor: not-allowed;
+        }
+        .page-info { color: var(--dim); }
     </style>
 </head>
 <body>
     <header>
-        <h1>{{.SiteTitle}}</h1>
-        {{if .SiteAuthor}}<div class="bio">By {{.SiteAuthor}} — {{.SiteAuthorBio}}</div>{{end}}
+        <h1><a href="/" style="color: inherit;">{{.SiteTitle}}</a></h1>
+        {{if .SiteAuthor}}<div class="bio">{{.SiteAuthor}} — {{.SiteAuthorBio}}</div>{{end}}
     </header>
 
     <main>
@@ -46,17 +74,70 @@
         </div>
 
         <section>
-            <h2>Recent Writing</h2>
-            <ul class="post-list">
+            <ul class="post-list" id="post-container">
                 {{range .Posts}}
                 <li class="post-item">
                     <div class="post-date">{{if .Date}}{{.Date}}{{end}}</div>
-                    <a href="{{.URL}}" style="font-size: 1.2rem; font-weight: bold;">{{.Title}}</a>
+                    <a href="{{.URL}}" style="font-size: 1.25rem; font-weight: bold;">{{.Title}}</a>
                     {{if .Description}}<p class="post-desc">{{.Description}}</p>{{end}}
                 </li>
                 {{end}}
             </ul>
         </section>
+
+        <nav class="pagination-nav" id="pagination-controls" style="display: none;">
+            <button class="btn-page" id="prev-btn">← Newer</button>
+            <span class="page-info" id="page-indicator">Page 1</span>
+            <button class="btn-page" id="next-btn">Older →</button>
+        </nav>
     </main>
+
+    <script>
+        const postsPerPage = 10;
+        let currentPage = 1;
+        const posts = Array.from(document.querySelectorAll('.post-item'));
+        const totalPages = Math.ceil(posts.length / postsPerPage);
+
+        const container = document.getElementById('pagination-controls');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const indicator = document.getElementById('page-indicator');
+
+        function updateDisplay() {
+            // Show/Hide posts
+            posts.forEach((post, index) => {
+                const start = (currentPage - 1) * postsPerPage;
+                const end = start + postsPerPage;
+                post.style.display = (index >= start && index < end) ? 'block' : 'none';
+            });
+            indicator.innerText = `Page ${currentPage} of ${totalPages}`;
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage === totalPages;
+
+            if (currentPage > 1) {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        if (posts.length > postsPerPage) {
+            container.style.display = 'flex';
+            
+            prevBtn.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    updateDisplay();
+                }
+            });
+
+            nextBtn.addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    updateDisplay();
+                }
+            });
+        }
+        updateDisplay();
+    </script>
 </body>
 </html>
+

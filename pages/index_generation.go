@@ -12,7 +12,6 @@ import (
 
 	parse "github.com/LazyCode2/Koyo-site/parser"
 	"github.com/LazyCode2/Koyo-site/utils"
-	"github.com/gomarkdown/markdown"
 )
 
 // PostMeta is a struct fpr blog post listing
@@ -114,7 +113,7 @@ func GenerateIndexPage(contentDir, templatePath, outputPath, siteTitle, siteAuth
 	}
 
 	frontmatter, bodyContent := parse.ParseFrontmatter(indexContent)
-	htmlBody := MarkdownToHTML(bodyContent)
+	htmlBody := utils.MarkdownToHTML(bodyContent)
 
 	posts, err := CollectPosts(contentDir)
 	if err != nil {
@@ -164,9 +163,4 @@ func GenerateIndexPage(contentDir, templatePath, outputPath, siteTitle, siteAuth
 	}
 
 	return nil
-}
-
-// Helper function to convert markdown to HTML
-func MarkdownToHTML(content []byte) []byte {
-	return markdown.ToHTML(content, nil, nil)
 }

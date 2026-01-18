@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	parse "github.com/LazyCode2/Koyo-site/parser"
 	"github.com/LazyCode2/Koyo-site/utils"
 	"github.com/gomarkdown/markdown"
 )
@@ -60,7 +61,7 @@ func CollectPosts(contentDir string) ([]PostMeta, error) {
 			continue
 		}
 
-		frontmatter, _ := ParseFrontmatter(content)
+		frontmatter, _ := parse.ParseFrontmatter(content)
 
 		post := PostMeta{
 			Filename: entry.Name(),
@@ -112,7 +113,7 @@ func GenerateIndexPage(contentDir, templatePath, outputPath, siteTitle, siteAuth
 		return fmt.Errorf("failed to read _index.md: %w", err)
 	}
 
-	frontmatter, bodyContent := ParseFrontmatter(indexContent)
+	frontmatter, bodyContent := parse.ParseFrontmatter(indexContent)
 	htmlBody := MarkdownToHTML(bodyContent)
 
 	posts, err := CollectPosts(contentDir)

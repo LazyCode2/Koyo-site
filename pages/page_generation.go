@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"html/template"
-	"log"
 	"os"
 	"path/filepath"
 
@@ -12,21 +11,25 @@ import (
 	"github.com/gomarkdown/markdown"
 )
 
-// Page is a struct for single page with frontmatter and content
+// Page represents a single rendered page
 type Page struct {
 	Title       string
 	Description string
 	Author      string
 	Date        string
 	Content     template.HTML
-	Meta        map[string]interface{} // additional frontmatter fields
+	Meta        Meta
 }
 
-func BuildPage(contentPath string) *Page {
-	content, _, err := parse.GetContent(contentPath)
+type Meta struct {
+	Tags      []string
+	SiteTitle string
+}
 
+func BuildPage(contentPath string) (*Page, error) {
+	content, _, err := parse.GetContent(contentPath)
 	if err != nil {
-		log.Fatal("cannot read markdown:", err)
+		return nil, fmt.Errorf("cannot read markdown: %w", err)
 	}
 
 	frontmatter, bodyContent := parse.ParseFrontmatter(content)
@@ -34,10 +37,9 @@ func BuildPage(contentPath string) *Page {
 
 	page := &Page{
 		Content: template.HTML(htmlBody),
-		Meta:    frontmatter,
 	}
 
-	// Extract common fields from frontmatter
+	// Frontmatter fields
 	if frontmatter != nil {
 		if title, ok := frontmatter["title"].(string); ok {
 			page.Title = title
@@ -51,9 +53,14 @@ func BuildPage(contentPath string) *Page {
 		if date, ok := frontmatter["date"].(string); ok {
 			page.Date = date
 		}
+
+		// Tags (string or list)
+		if rawTags, ok := frontmatter["tags"]; ok {
+			page.Meta.Tags = parse.ParseTagsRaw(rawTags)
+		}
 	}
 
-	return page
+	return page, nil
 }
 
 func RenderPage(page *Page, templatePath string) ([]byte, error) {
@@ -71,14 +78,17 @@ func RenderPage(page *Page, templatePath string) ([]byte, error) {
 }
 
 func GeneratePage(contentPath, templatePath, outputPath string) error {
-	page := BuildPage(contentPath)
+	page, err := BuildPage(contentPath)
+	if err != nil {
+		return err
+	}
 
 	html, err := RenderPage(page, templatePath)
 	if err != nil {
 		return err
 	}
-	outputDir := filepath.Dir(outputPath)
-	if err := os.MkdirAll(outputDir, 0755); err != nil {
+
+	if err := os.MkdirAll(filepath.Dir(outputPath), 0755); err != nil {
 		return fmt.Errorf("failed to create output directory: %w", err)
 	}
 

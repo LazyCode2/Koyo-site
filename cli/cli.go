@@ -26,23 +26,23 @@ func Init() {
 
 	switch {
 	case *initFlag:
-		if err := initProject(); err != nil {
+		if err := InitProject(); err != nil {
 			logger.Fatal("Initializing failed: %v", err)
 		}
 	case *buildFlag:
-		if err := buildSite(); err != nil {
+		if err := BuildSite(); err != nil {
 			logger.Fatal("Build failed: %v", err)
 		}
 	case *serveFlag:
-		serveSite()
+		ServeSite()
 	case *addFile != "":
-		addNewFile(*addFile)
+		AddNewFile(*addFile)
 	default:
-		printHelp()
+		PrintHelp()
 	}
 }
 
-func initProject() error {
+func InitProject() error {
 	dirs := []string{
 		"content",
 		"templates",
@@ -85,7 +85,7 @@ server:
 	return nil
 }
 
-func addNewFile(filename string) error {
+func AddNewFile(filename string) error {
 	// Load config
 	cfg, err := config.LoadConf()
 	if err != nil {
@@ -101,7 +101,7 @@ func addNewFile(filename string) error {
 	return nil
 }
 
-func buildSite() error {
+func BuildSite() error {
 	logger.Info("Building site...")
 
 	cfg, err := config.LoadConf()
@@ -156,9 +156,9 @@ func buildSite() error {
 	return nil
 }
 
-func serveSite() error {
+func ServeSite() error {
 	// Build first
-	if err := buildSite(); err != nil {
+	if err := BuildSite(); err != nil {
 		return err
 	}
 
@@ -177,7 +177,7 @@ func serveSite() error {
 	return nil
 }
 
-func printHelp() {
+func PrintHelp() {
 	logger.Info(`
 koyo-site — a minimal static site generator
 

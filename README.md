@@ -4,7 +4,7 @@ A minimalistic static site generator written in Go. Simple, fast, and focused on
 
 ## Screenshot
 
-<img width="1326" height="647" alt="Screenshot 2025-12-15 at 15-37-35 Welcome to My Blog" src="https://github.com/user-attachments/assets/67a533a5-8c80-4a1e-9d3f-26c017c12d07" />
+<img width="1326" height="647" alt="Screenshot Welcome to My Blog" src="./assets/Welcome Blog.png" />
 
 ## Installation
 

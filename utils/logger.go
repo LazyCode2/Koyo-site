@@ -6,6 +6,14 @@ import (
 	"os"
 )
 
+const (
+	reset  = "\033[0m"
+	bold   = "\033[1m"
+	red    = "\033[31m"
+	yellow = "\033[33m"
+	blue   = "\033[34m"
+)
+
 type Logger struct {
 	info *log.Logger
 	warn *log.Logger
@@ -14,9 +22,9 @@ type Logger struct {
 
 func NewLogger() *Logger {
 	return &Logger{
-		info: log.New(os.Stdout, "koyo-site: [INFO] ", 0),
-		warn: log.New(os.Stdout, "koyo-site: [WARN] ", 0),
-		err:  log.New(os.Stderr, "koyo-site: [ERROR] ", 0),
+		info: log.New(os.Stdout, bold+blue+"koyo-site: [INFO] "+reset, 0),
+		warn: log.New(os.Stdout, bold+yellow+"koyo-site: [WARN] "+reset, 0),
+		err:  log.New(os.Stderr, bold+red+"koyo-site: [ERROR] "+reset, 0),
 	}
 }
 

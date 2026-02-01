@@ -26,7 +26,9 @@ func Init() {
 
 	switch {
 	case *initFlag:
-		initProject()
+		if err := initProject(); err != nil {
+			logger.Fatal("Initializing failed: %v", err)
+		}
 	case *buildFlag:
 		if err := buildSite(); err != nil {
 			logger.Fatal("Build failed: %v", err)
@@ -40,7 +42,7 @@ func Init() {
 	}
 }
 
-func initProject() {
+func initProject() error {
 	dirs := []string{
 		"content",
 		"templates",
@@ -79,6 +81,8 @@ server:
 
 	logger.Info("✔ Created koyo.config.yaml")
 	logger.Info("koyo-site project initialized")
+
+	return nil
 }
 
 func addNewFile(filename string) error {

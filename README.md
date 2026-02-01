@@ -4,7 +4,7 @@ A minimalistic static site generator written in Go. Simple, fast, and focused on
 
 ## Screenshot
 
-<img width="1326" height="647" alt="Screenshot Welcome to My Blog" src="./assets/Welcome Blog.png" />
+<img width="600" height="400" alt="Screenshot Welcome to My Blog" src="./assets/Welcome Blog.png" />
 
 ## Installation
 

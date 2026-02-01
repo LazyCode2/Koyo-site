@@ -69,6 +69,8 @@ title: "My First Post"
 description: "Getting started with Koyo-site"
 author: "Your Name"
 date: "2024-12-15"
+tags: 
+  - Welcome
 ---
 
 # My First Post
@@ -207,6 +209,7 @@ paths:
 - `{{.Date}}` - Post date
 - `{{.Content}}` - HTML content
 - `{{.Meta}}` - Map of all frontmatter fields
+- `{{.Meta.Tags}}` - Map all tags
 
 ## Frontmatter
 
@@ -219,7 +222,9 @@ description: "A brief description"
 author: "Author Name"
 date: "2024-12-15"
 # Add custom fields
-tags: ["golang", "web"]
+tags: 
+  - go 
+  - tech
 draft: false
 ---
 ```
@@ -227,8 +232,8 @@ draft: false
 Access custom fields in templates via `{{.Meta}}`:
 
 ```html
-{{if .Meta.tags}}
-  Tags: {{range .Meta.tags}}{{.}}{{end}}
+{{if .Meta.Tags}}
+  Tags: {{range .Meta.Tags}}{{.}}{{end}}
 {{end}}
 ```
 
@@ -280,6 +285,7 @@ MIT License - feel free to use and modify!
 - [ ] RSS feed generation
 - [ ] Sitemap generation
 - [ ] Draft post support
+- [ x ] Tag rendering
 
 ---
 

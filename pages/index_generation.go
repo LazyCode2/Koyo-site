@@ -14,7 +14,7 @@ import (
 	"github.com/LazyCode2/Koyo-site/utils"
 )
 
-// PostMeta is a struct fpr blog post listing
+// PostMeta is a struct for blog post listing
 type PostMeta struct {
 	Title       string
 	Description string
